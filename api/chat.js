@@ -2,7 +2,7 @@ export default async function handler(req,res){
 res.setHeader('Cache-Control','no-store');
 if(req.method!=='POST'){res.setHeader('Allow','POST');return res.status(405).json({error:'Method not allowed'});}
 const key=process.env.GEMINI_API_KEY;
-if(!key)return res.status(503).json({error:'Gemini chat is not configured. Add GEMINI_API_KEY to Vercel Production environment variables and redeploy.'});
+if(!key)return res.status(503).json({error:'Gemini API key is missing from this deployment. In Vercel, open the tnstc-bus-3d project, add GEMINI_API_KEY under Settings > Environment Variables for Production, save it, then redeploy the latest deployment. Do not enter your key in this chat.'});
 const origin=req.headers.origin,host=req.headers.host;
 if(origin){try{if(new URL(origin).host!==host)return res.status(403).json({error:'Origin not allowed'});}catch{return res.status(403).json({error:'Invalid origin'});}}
 const {message,history}=req.body||{};
