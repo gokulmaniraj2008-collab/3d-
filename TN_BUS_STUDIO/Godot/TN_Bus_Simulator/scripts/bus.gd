@@ -8,6 +8,13 @@ const TURN_RATE := 0.85
 const REVERSE_MAX_SPEED := 5.0
 const COAST_DRAG := 2.0
 const STEERING_RESPONSE := 3.0
+const HANDBRAKE_DECEL := 18.0
+const LOW_SPEED_TURN_FACTOR := 0.22
+const HIGH_SPEED_STEER_FACTOR := 0.45
+var handbrake_on := false
+var handbrake_touch := false
+var doors_open := false
+var gear := 1 # 1 forward, -1 reverse; direction changes require stopping
 var steering_angle := 0.0
 var speed := 0.0
 var throttle_touch := false
@@ -60,7 +67,11 @@ func _fallback_bus() -> void:
 func drive(delta: float, throttle: float, steering: float, braking: bool) -> void:
     throttle = clampf(throttle, -1.0, 1.0)
     steering = clampf(steering, -1.0, 1.0)
-    if braking:
+    if handbrake_on or handbrake_touch:
+        speed = move_toward(speed, 0.0, HANDBRAKE_DECEL * delta)
+    elif doors_open:
+        speed = move_toward(speed, 0.0, BRAKE * delta)
+    elif braking:
         speed = move_toward(speed, 0.0, BRAKE * delta)
     elif absf(throttle) > 0.01:
         var target_speed := throttle * (MAX_SPEED if throttle > 0.0 else REVERSE_MAX_SPEED)
@@ -73,9 +84,20 @@ func drive(delta: float, throttle: float, steering: float, braking: bool) -> voi
         speed = move_toward(speed, 0.0, COAST_DRAG * delta)
     steering_angle = move_toward(steering_angle, steering, STEERING_RESPONSE * delta)
     if absf(speed) > 0.05:
-        rotation.y += steering_angle * TURN_RATE * delta * signf(speed) * minf(absf(speed) / 4.0, 1.0)
+        var speed_ratio: float = clampf(absf(speed) / MAX_SPEED, 0.0, 1.0)
+        var steer_factor: float = lerpf(1.0, HIGH_SPEED_STEER_FACTOR, speed_ratio)
+        rotation.y += steering_angle * TURN_RATE * steer_factor * delta * signf(speed) * lerpf(LOW_SPEED_TURN_FACTOR, 1.0, clampf(absf(speed) / 4.0, 0.0, 1.0))
     velocity = -global_transform.basis.z * speed
     move_and_slide()
+
+func toggle_handbrake() -> void:
+    handbrake_on = not handbrake_on
+
+func set_doors_open(open: bool) -> bool:
+    if open and absf(speed) > 0.1:
+        return false
+    doors_open = open
+    return true
 
 func _physics_process(delta: float) -> void:
     var throttle := Input.get_action_strength("accelerate") - Input.get_action_strength("reverse")
