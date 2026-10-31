@@ -117,6 +117,6 @@ func _process(delta: float) -> void:
     if bus == null:
         return
     speed_label.text = "TN BUS  |  %03d km/h" % roundi(absf(bus.speed) * 3.6)
-    var desired := bus.global_position + bus.global_transform.basis.z * 17.0 + Vector3.UP * 8.0
+    var desired: Vector3 = bus.global_position + bus.global_transform.basis.z * 17.0 + Vector3.UP * 8.0
     camera.global_position = camera.global_position.lerp(desired, minf(delta * 5.0, 1.0))
     camera.look_at(bus.global_position + Vector3.UP * 1.7, Vector3.UP)
