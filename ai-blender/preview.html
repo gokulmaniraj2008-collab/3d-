@@ -42,7 +42,7 @@ latest.addEventListener('click',async()=>{
     if(data.schemaVersion!==1||data.file!=='scene.glb'||!Number.isSafeInteger(data.runId)||data.runId<1||!Number.isSafeInteger(data.bytes)||data.bytes<20||data.bytes>50*1024*1024)throw new Error('Invalid gallery metadata.');
     if(ticket!==requestId)return;
     status.textContent='Loading published model from run #'+data.runId+'…';
-    viewer.src=gallery+'scene.glb?run='+data.runId;empty.hidden=true;reset.disabled=false;clear.disabled=false;
+    viewer.setAttribute('src',gallery+'scene.glb?run='+data.runId);empty.hidden=true;reset.disabled=false;clear.disabled=false;
   }catch(error){if(ticket===requestId)status.textContent=error.message||'Unable to load gallery.';}
   finally{latest.disabled=false;}
 });
@@ -56,7 +56,7 @@ input.addEventListener('change',async()=>{
   const magic=String.fromCharCode(...header.slice(0,4));
   const view=new DataView(header.buffer);
   if(magic!=='glTF'||view.getUint32(4,true)!==2||view.getUint32(8,true)!==file.size){status.textContent='Invalid GLB 2.0 header or file length.';input.value='';return;}
-  current=URL.createObjectURL(file);status.textContent='Loading '+file.name+'…';viewer.src=current;empty.hidden=true;reset.disabled=false;clear.disabled=false;
+  current=URL.createObjectURL(file);status.textContent='Loading '+file.name+'…';viewer.setAttribute('src',current);empty.hidden=true;reset.disabled=false;clear.disabled=false;
 });
 viewer.addEventListener('load',()=>{status.textContent='Model ready. Drag to rotate and pinch to zoom.';});
 viewer.addEventListener('error',()=>{status.textContent='Unable to render this GLB. Try another exported file or load the gallery again.';});
