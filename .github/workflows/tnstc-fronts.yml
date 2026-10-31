@@ -19,7 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install free Blender
-        run: sudo apt-get update && sudo apt-get install -y blender
+        run: sudo apt-get update && sudo apt-get install -y blender python3-numpy
+      - name: Verify Blender Python dependencies
+        run: blender -b --python-exit-code 1 --python-expr "import numpy; print('NumPy available:', numpy.__version__)"
       - name: Generate both front GLBs
         run: blender -b -t 2 --python-exit-code 1 --python TN_BUS_STUDIO/Blender/generate_dual_fronts.py
       - name: Verify distinct valid GLB assets
