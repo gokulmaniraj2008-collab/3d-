@@ -102,4 +102,9 @@ func build(world: Node3D) -> Node3D:
     block(village, "BusStopShelterRoof", Vector3(-9.4, 2.85, -24), Vector3(2.3, 0.17, 5.1), roof)
     block(village, "BusStopBench", Vector3(-9.4, 0.65, -24), Vector3(0.45, 0.17, 2.4), brown)
     block(village, "BusStopSign", Vector3(-6.7, 2.3, -24), Vector3(0.10, 0.6, 1.2), yellow)
+    # Route 001: two additional identifiable stops; keep the original Village Stop.
+    for stop_name in ["AgriculturalMarketStop", "TownTerminalStop"]:
+        var z: float = -60.0 if stop_name == "AgriculturalMarketStop" else -85.0
+        block(village, stop_name, Vector3(-8.5, 0.13, z), Vector3(2.5, 0.25, 6.0), white)
+        block(village, stop_name + "Sign", Vector3(-6.7, 2.2, z), Vector3(0.1, 0.6, 1.2), yellow)
     return village

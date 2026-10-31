@@ -19,6 +19,9 @@ func _run() -> void:
     if village == null or village.get_node_or_null("VillageRoad") == null or village.get_node_or_null("GroundCollision") == null or village.get_node_or_null("BusStopPlatform") == null:
         fail("Village road, ground collision or bus stop missing")
         return
+    if village.get_node_or_null("AgriculturalMarketStop") == null or village.get_node_or_null("TownTerminalStop") == null:
+        fail("Route 001 stop scenery missing")
+        return
     var bus := world.get_node_or_null("Bus") as CharacterBody3D
     if bus == null:
         fail("Bus node missing")
