@@ -63,6 +63,8 @@ jobs:
           python3 ai-blender/tests/validate_glb.py ai-blender-output/phase2/scene.glb
           test -s ai-blender-output/phase2/scene.blend
           test -s ai-blender-output/phase2/scene.png
+          python3 ai-blender/phase4/make_manifest.py --source ai-blender-output/phase2 --output "$RUNNER_TEMP/gallery-validation" --run-id "$GITHUB_RUN_ID" --sha "$GITHUB_SHA"
+          python3 -m json.tool "$RUNNER_TEMP/gallery-validation/latest.json" >/dev/null
       - uses: actions/upload-artifact@v4
         with:
           name: ai-blender-phase2-${{ github.run_id }}
