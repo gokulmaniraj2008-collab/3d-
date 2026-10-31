@@ -59,34 +59,6 @@ def build(kind):
  cube('Front cream belt',(0,front-.065,2.05),(w-.08,.045,.15),ivory,.025)
  if town:
   cube('Town broad central grille',(0,front-.085,1.35),(1.13,.045,.48),rubber,.055)
-  for s in (-1,1):
-   cube('Town rectangular twin lamp housing',(s*.85,front-.09,1.30),(.47,.06,.25),rubber,.04)
-   for x in (.74,.94):cube('Town rectangular headlamp %s %s'%(s,x),(s*x,front-.133,1.30),(.145,.015,.145),lamp,.015)
-   cube('Town corner turn signal %s'%s,(s*1.09,front-.12,1.63),(.16,.018,.12),amber,.018)
- else:
-  cube('Ordinary narrower grille',(0,front-.09,1.39),(.86,.05,.43),rubber,.035)
-  for s in (-1,1):
-   cube('Ordinary lamp surround %s'%s,(s*.87,front-.095,1.32),(.53,.06,.33),rubber,.035)
-   for x in (.75,.99):cyl('Ordinary circular lamp %s %s'%(s,x),(s*x,front-.14,1.33),.095,.026,lamp)
-   cube('Ordinary indicator %s'%s,(s*1.07,front-.13,1.62),(.17,.018,.11),amber,.015)
- for i in range(6):
-  cube('Grille horizontal blade %d'%i,(0,front-.13,1.16+i*.075),(.95 if town else .71,.015,.012),steel)
- for s in (-1,1):
-  # Diagonal articulated arm and separate rubber blade, positioned on glass face.\n  def rod(name,p1,p2,r,material):\n   from mathutils import Vector\n   a,b=Vector(p1),Vector(p2);delta=b-a\n   bpy.ops.mesh.primitive_cylinder_add(vertices=10,radius=r,depth=delta.length,location=(a+b)/2)\n   o=bpy.context.object;o.name=name;o.rotation_euler=delta.to_track_quat('Z','Y').to_euler();o.data.materials.append(material)\n  pivot=(s*.76,front-.13,2.23);elbow=(s*.53,front-.14,2.39);tip=(s*.14,front-.14,2.48)\n  rod('Wiper articulated arm '+str(s),pivot,elbow,.012,steel)\n  rod('Wiper rubber blade '+str(s),elbow,tip,.014,rubber)
-  cube('Bumper reflector %s'%s,(s*.99,front-.19,.84),(.14,.02,.055),amber)
- cube('Stamped front bumper',(0,front-.16,.81),(w+.12,.20,.19),steel,.055)
- cube('Number plate mount',(0,front-.273,.83),(.44,.014,.105),rubber)
- cube('Roof marker',(0,front-.075,3.20),(.43,.07,.045),amber)
- # Both studies export independent front geometry; no demo bus overwrite.
- bpy.ops.object.select_all(action='DESELECT')
- for o in bpy.context.scene.objects:
-  if o.type=='MESH':o.select_set(True)
- bpy.context.view_layer.objects.active=next(o for o in bpy.context.scene.objects if o.type=='MESH')
- out=os.path.join(ROOT,'TNSTC_'+kind+'_Front.glb')
- bpy.ops.export_scene.gltf(filepath=out,export_format='GLB',use_selection=True)
- print('EXPORTED',out,os.path.getsize(out))
-for kind in ('Town','Ordinary'):build(kind) if town:
-  cube('Town broad central grille',(0,front-.085,1.35),(1.13,.045,.48),rubber,.055)
   for side in (-1,1):
    cube('Town recessed rectangular lamp bezel '+str(side),(side*.85,front-.105,1.30),(.50,.085,.29),steel,.032)
    cube('Town dark lamp cavity '+str(side),(side*.85,front-.154,1.30),(.45,.012,.24),rubber,.025)
@@ -105,7 +77,15 @@ for kind in ('Town','Ordinary'):build(kind) if town:
  for i in range(6):
   cube('Grille horizontal blade %d'%i,(0,front-.13,1.16+i*.075),(.95 if town else .71,.015,.012),steel)
  for s in (-1,1):
-  cube('Wiper arm %s'%s,(s*.48,front-.093,2.31),(.78,.018,.025),rubber)
+  # Diagonal articulated arm and separate rubber blade, positioned on glass face.
+  def rod(name,p1,p2,r,material):
+   from mathutils import Vector
+   a,b=Vector(p1),Vector(p2);delta=b-a
+   bpy.ops.mesh.primitive_cylinder_add(vertices=10,radius=r,depth=delta.length,location=(a+b)/2)
+   o=bpy.context.object;o.name=name;o.rotation_euler=delta.to_track_quat('Z','Y').to_euler();o.data.materials.append(material)
+  pivot=(s*.76,front-.13,2.23);elbow=(s*.53,front-.14,2.39);tip=(s*.14,front-.14,2.48)
+  rod('Wiper articulated arm '+str(s),pivot,elbow,.012,steel)
+  rod('Wiper rubber blade '+str(s),elbow,tip,.014,rubber)
   cube('Bumper reflector %s'%s,(s*.99,front-.19,.84),(.14,.02,.055),amber)
  cube('Stamped front bumper',(0,front-.16,.81),(w+.12,.20,.19),steel,.055)
  cube('Number plate mount',(0,front-.273,.83),(.44,.014,.105),rubber)
@@ -118,4 +98,5 @@ for kind in ('Town','Ordinary'):build(kind) if town:
  out=os.path.join(ROOT,'TNSTC_'+kind+'_Front.glb')
  bpy.ops.export_scene.gltf(filepath=out,export_format='GLB',use_selection=True)
  print('EXPORTED',out,os.path.getsize(out))
-for kind in ('Town','Ordinary'):build(kind)
+for kind in ('Town','Ordinary'):
+ build(kind)
