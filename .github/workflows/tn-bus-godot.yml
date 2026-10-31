@@ -28,7 +28,7 @@ jobs:
       - name: Import Godot assets
         run: /tmp/godot --headless --path TN_BUS_STUDIO/Godot/TN_Bus_Simulator --editor --import --quit
       - name: Run simulator smoke test
-        run: /tmp/godot --headless --path TN_BUS_STUDIO/Godot/TN_Bus_Simulator --script res://tests/smoke_test.gd
+        run: timeout 120s /tmp/godot --headless --path TN_BUS_STUDIO/Godot/TN_Bus_Simulator --script res://tests/smoke_test.gd
       - name: Upload playable Godot project
         uses: actions/upload-artifact@v4
         with:
