@@ -14,9 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Blender
-        run: sudo apt-get update && sudo apt-get install -y blender
+        run: sudo apt-get update && sudo apt-get install -y blender python3-numpy
       - name: Generate BLEND, GLB and preview
-        run: blender -b -t 2 --python TN_BUS_STUDIO/Blender/generate_bus.py
+        run: blender -b -t 2 --python-exit-code 1 --python TN_BUS_STUDIO/Blender/generate_bus.py
       - name: Verify exports
         run: |
           test -s TN_BUS_STUDIO/Shared_Assets/TN_Bus.blend
