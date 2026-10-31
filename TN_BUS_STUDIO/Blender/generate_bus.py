@@ -119,6 +119,62 @@ for y in (-2.8,.1,2.9)[:CONFIG['roof_vents']]:
     box('Roof vent %s'%y,(0,y,3.19),(.62,.72,.085),silver)
 for side in (-1,1):
     box('Rain gutter %s'%side,(side*1.245,0,3.075),(.045,10.35,.035),silver)
+# Phase 5: additional TNSTC-inspired exterior and fully furnished cabin.
+# These are procedural meshes, included in both the BLEND and exported GLB.
+dark_blue=material('Dashboard instrument blue',(.018,.045,.075))
+lamp_glow=material('Cabin lamp ivory',(1.0,.91,.63))
+step_mat=material('Entrance step metal',(.31,.32,.30),.45)
+route_white=material('Route board lettering',(.95,.95,.82))
+# Body stripes and distinct side panels. Keep window openings and existing geometry intact.
+for side in (-1,1):
+    box('Exterior cream side stripe %s'%side,(side*1.239,0,1.92),(.024,10.12,.095),cream)
+    box('Exterior lower green molding %s'%side,(side*1.242,0,1.10),(.025,10.12,.085),green)
+    for y in (-3.6,3.1):
+        box('Wheel arch accent %s %s'%(side,y),(side*1.255,y,.97),(.03,1.23,.055),black)
+    box('Front route side marker %s'%side,(side*1.257,-4.35,2.08),(.022,.65,.13),cream)
+    box('Emergency exit marking %s'%side,(side*1.258,2.65,2.21),(.022,.48,.055),white)
+    box('Side mirror reflective face %s'%side,(side*1.647,-5.17,2.5),(.012,.075,.26),silver)
+# Real cabin detailing: overhead racks, window latches, seat handles and cushions.
+for side in (-1,1):
+    box('Luggage rack %s'%side,(side*.92,.28,2.72),(.43,8.55,.045),seat_frame)
+    for row in range(CONFIG['seat_rows']):
+        y=-3.40+row*1.16
+        x=side*.76
+        box('Seat headrest %s %s'%(row,side),(x,y+.29,2.36),(.66,.12,.15),seat)
+        box('Seat grab handle %s %s'%(row,side),(x,y+.355,2.30),(.48,.035,.035),yellow)
+        box('Seat base frame %s %s'%(row,side),(x,y,1.62),(.72,.61,.045),seat_frame)
+        box('Window latch %s %s'%(row,side),(side*1.257,y,2.34),(.025,.14,.055),silver)
+# Entrance step and handrails at front passenger entry.
+for i in range(3):
+    box('Entry stair tread %s'%i,(.78,-3.90+i*.28,1.02+i*.13),(.76,.25,.045),step_mat)
+for x in (.38,1.08):
+    box('Entry vertical handrail %s'%x,(x,-3.78,1.91),(.035,.035,1.65),yellow)
+# Cockpit: instrument cluster, gauges, steering hub/spokes, pedals, gear lever.
+box('Driver instrument binnacle',(-.64,-5.00,2.13),(.92,.12,.20),dark_blue)
+for i in range(3):
+    disc('Dashboard dial %s'%i,(-.91+i*.27,-5.075,2.17),.085,.012,white,(math.pi/2,0,0))
+disc('Steering hub',(-.68,-4.61,2.28),.068,.07,silver,(math.pi/2,0,0))
+for angle in (0,2*math.pi/3,4*math.pi/3):
+    x=-.68+.12*math.cos(angle); z=2.28+.12*math.sin(angle)
+    box('Steering spoke %.2f'%angle,(x,-4.61,z),(.14,.035,.035),silver)
+box('Driver pedal accelerator',(-.44,-5.01,1.39),(.11,.22,.035),black)
+box('Driver pedal brake',(-.72,-5.01,1.39),(.16,.22,.035),black)
+disc('Gear lever shaft',(-.19,-4.48,1.71),.022,.34,silver,(0,0,0))
+disc('Gear lever knob',(-.19,-4.48,1.90),.065,.075,black,(0,0,0))
+box('Ticket machine',(.65,-4.43,2.12),(.25,.18,.18),dark_blue)
+box('Driver partition',(-.03,-4.02,2.01),(.045,.055,1.36),yellow)
+for y in (-3.1,-.7,1.7,4.0):
+    box('Ceiling lamp %s'%y,(0,y,2.91),(.43,.31,.025),lamp_glow)
+# Exterior signage and lighting. Keep signage as geometry for GLB compatibility.
+box('Front destination frame',(0,-5.252,2.94),(1.88,.035,.17),silver)
+box('Rear route panel',(0,5.247,2.92),(1.30,.03,.18),board)
+for side in (-1,1):
+    box('Rear brake lamp %s'%side,(side*.94,5.268,1.12),(.22,.04,.13),red)
+    box('Front windscreen wiper %s'%side,(side*.49,-5.211,2.33),(.79,.025,.018),black)
+box('Front lower mud flap',(-.85,-5.14,.48),(.37,.045,.29),black)
+box('Front lower mud flap right',(.85,-5.14,.48),(.37,.045,.29),black)
+box('Rear mud flap left',(-.92,4.1,.43),(.38,.045,.34),black)
+box('Rear mud flap right',(.92,4.1,.43),(.38,.045,.34),black)
 # Camera / light are not part of exported model.
 bpy.ops.object.camera_add(location=(11,-16,9))
 cam=bpy.context.object; direction=Vector((0,0,1.5))-cam.location
