@@ -42,5 +42,14 @@ func _run() -> void:
     if bus.get("speed") >= 7.0:
         fail("Brake must reduce speed")
         return
+    bus.set("speed", 0.0)
+    bus.call("drive", 1.0, -1.0, 0.0, false)
+    if bus.get("speed") >= 0.0 or absf(bus.get("speed")) > 5.01:
+        fail("Reverse speed must be negative and limited")
+        return
+    bus.call("drive", 0.5, 1.0, 0.0, false)
+    if bus.get("speed") > 0.0:
+        fail("Direction changes must brake before accelerating forward")
+        return
     print("TN BUS SMOKE TEST PASSED")
     quit(0)
