@@ -80,12 +80,12 @@ func build(world: Node3D) -> Node3D:
         # Water channel separates the agricultural fields from the shoulder.
         block(village, "IrrigationCanal", Vector3(side * 7.35, 0.012, 0), Vector3(0.65, 0.025, 188), blue)
         for z in TREE_POSITIONS:
-            var x := side * 10.0
+            var x: float = side * 10.0
             cylinder(village, "CoconutTrunk", Vector3(x, 2.4, z), 0.16, 4.8, brown, true)
             for offset in [-1.0, 0.0, 1.0]:
                 block(village, "PalmFrond", Vector3(x + offset * 0.9, 4.85, z + offset * 0.3), Vector3(2.0, 0.12, 0.46), leaf)
         for z in [-68.0, -10.0, 48.0]:
-            var x := side * 28.0
+            var x: float = side * 28.0
             block(village, "VillageHouse", Vector3(x, 1.25, z), Vector3(5, 2.5, 5.5), white, true)
             block(village, "TerracottaRoof", Vector3(x, 2.65, z), Vector3(5.6, 0.35, 6.0), roof)
             block(village, "HouseDoor", Vector3(x - side * 2.53, 0.85, z), Vector3(0.06, 1.7, 0.85), brown)
