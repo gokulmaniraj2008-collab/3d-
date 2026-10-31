@@ -1,6 +1,11 @@
 name: Validate Godot TN Bus Simulator
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'TN_BUS_STUDIO/**'
+      - '.github/workflows/tn-bus-*.yml'
   pull_request:
     paths:
       - 'TN_BUS_STUDIO/**'
