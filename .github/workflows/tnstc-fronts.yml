@@ -5,13 +5,14 @@ on:
     paths:
       - 'TN_BUS_STUDIO/Blender/generate_dual_fronts.py'
       - '.github/workflows/tnstc-fronts.yml'
+      - 'ai-3d-studio/compare-fronts.html'
   push:
     branches: [main]
     paths:
       - 'TN_BUS_STUDIO/Blender/generate_dual_fronts.py'
       - '.github/workflows/tnstc-fronts.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   fronts:
     runs-on: ubuntu-latest
@@ -45,3 +46,23 @@ jobs:
           name: TNSTC-Town-and-Ordinary-Front-GLBs
           path: TN_BUS_STUDIO/Shared_Assets/Front_Studies/*.glb
           retention-days: 7
+      - name: Publish verified front GLBs to website (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          mkdir -p ai-3d-studio/models
+          cp TN_BUS_STUDIO/Shared_Assets/Front_Studies/TNSTC_Town_Front.glb ai-3d-studio/models/
+          cp TN_BUS_STUDIO/Shared_Assets/Front_Studies/TNSTC_Ordinary_Front.glb ai-3d-studio/models/
+          test -s ai-3d-studio/models/TNSTC_Town_Front.glb
+          test -s ai-3d-studio/models/TNSTC_Ordinary_Front.glb
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ai-3d-studio/models/TNSTC_Town_Front.glb ai-3d-studio/models/TNSTC_Ordinary_Front.glb
+          if git diff --cached --quiet; then echo 'Front GLBs unchanged'; exit 0; fi
+          git commit -m 'Publish verified TNSTC front GLBs [skip ci]'
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 5
+          done
+          exit 1
