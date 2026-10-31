@@ -15,8 +15,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Blender and NumPy
         run: sudo apt-get update && sudo apt-get install -y blender python3-numpy unzip
+      - name: Validate model configuration
+        run: python3 TN_BUS_STUDIO/Blender/validate_config.py
       - name: Generate shared GLB
         run: blender -b -t 2 --python-exit-code 1 --python TN_BUS_STUDIO/Blender/generate_bus.py
+      - name: Verify generated bus assets
+        run: python3 TN_BUS_STUDIO/Blender/validate_outputs.py
       - name: Copy bus asset into Godot project
         run: cp TN_BUS_STUDIO/Shared_Assets/TN_Bus.glb TN_BUS_STUDIO/Godot/TN_Bus_Simulator/assets/TN_Bus.glb
       - name: Install Godot 4.3
