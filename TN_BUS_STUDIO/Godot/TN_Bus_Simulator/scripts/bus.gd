@@ -31,7 +31,7 @@ func _ready() -> void:
     if ResourceLoader.exists("res://assets/TN_Bus.glb"):
         imported = load("res://assets/TN_Bus.glb")
     if imported is PackedScene:
-        var model := imported.instantiate()
+        var model: Node = imported.instantiate()
         visual.add_child(model)
         # Blender exports Z-up converted to Godot Y-up; model's front is -Z.
     else:
