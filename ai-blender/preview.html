@@ -12,9 +12,11 @@
 <body>
 <nav><a href="./index.html">← AI Blender Studio</a></nav>
 <main>
-<p>PHASE 3 · ANDROID-FRIENDLY LOCAL VIEWER</p><h1>Interactive 3D preview</h1>
-<p>Download your GitHub Actions artifact ZIP, extract it on Android, then choose <strong>scene.glb</strong>. The model loads in this browser; it is not uploaded to a server.</p>
+<p>PHASE 4 · ANDROID-FRIENDLY MODEL GALLERY</p><h1>Interactive 3D preview</h1>
+<p>Open the latest published AI-generated model with one tap, or choose your own <strong>scene.glb</strong> locally. Local files are not uploaded.</p>
 <section class="panel">
+<button id="latest" type="button">Load latest AI-generated model</button>
+<p><small>Public gallery: each successful manual Phase 2 run on main replaces the latest model. Avoid generating private or sensitive scenes.</small></p>
 <label for="model-file">Choose a GLB file (up to 50 MB)</label>
 <input id="model-file" type="file" accept=".glb,model/gltf-binary,application/octet-stream" aria-describedby="status">
 <p id="status" role="status" aria-live="polite">No model selected.</p>
@@ -26,21 +28,38 @@
 <p><a href="https://github.com/gokulmaniraj2008-collab/3d-/actions/workflows/ai-blender-phase2.yml">Generate another model with GitHub Actions</a></p>
 </main>
 <script>
-const input=document.getElementById('model-file'),viewer=document.getElementById('viewer'),status=document.getElementById('status'),empty=document.getElementById('empty'),reset=document.getElementById('reset'),clear=document.getElementById('clear');
+const latest=document.getElementById('latest'),input=document.getElementById('model-file'),viewer=document.getElementById('viewer'),status=document.getElementById('status'),empty=document.getElementById('empty'),reset=document.getElementById('reset'),clear=document.getElementById('clear');
 let current=null;
-function release(){viewer.removeAttribute('src');if(current){URL.revokeObjectURL(current);current=null;}empty.hidden=false;reset.disabled=true;clear.disabled=true;}
+const gallery='https://raw.githubusercontent.com/gokulmaniraj2008-collab/3d-/ai-blender-gallery/';
+let requestId=0;
+function release(){requestId++;viewer.removeAttribute('src');if(current){URL.revokeObjectURL(current);current=null;}empty.hidden=false;reset.disabled=true;clear.disabled=true;}
+latest.addEventListener('click',async()=>{
+  release();input.value='';const ticket=requestId;latest.disabled=true;status.textContent='Checking published gallery…';
+  try{
+    const response=await fetch(gallery+'latest.json?refresh='+Date.now(),{cache:'no-store'});
+    if(!response.ok)throw new Error(response.status===404?'No published model yet. Run Phase 2 manually on main.':'Gallery metadata unavailable.');
+    const data=await response.json();
+    if(data.schemaVersion!==1||data.file!=='scene.glb'||!Number.isSafeInteger(data.runId)||data.runId<1||!Number.isSafeInteger(data.bytes)||data.bytes<20||data.bytes>50*1024*1024)throw new Error('Invalid gallery metadata.');
+    if(ticket!==requestId)return;
+    status.textContent='Loading published model from run #'+data.runId+'…';
+    viewer.src=gallery+'scene.glb?run='+data.runId;empty.hidden=true;reset.disabled=false;clear.disabled=false;
+  }catch(error){if(ticket===requestId)status.textContent=error.message||'Unable to load gallery.';}
+  finally{latest.disabled=false;}
+});
 input.addEventListener('change',async()=>{
   release();const file=input.files&&input.files[0];if(!file){status.textContent='No model selected.';return;}
   if(!/\.glb$/i.test(file.name)){status.textContent='Please select a .glb file.';input.value='';return;}
   if(file.size<20||file.size>50*1024*1024){status.textContent='File must be between 20 bytes and 50 MB.';input.value='';return;}
+  const ticket=requestId;
   const header=new Uint8Array(await file.slice(0,12).arrayBuffer());
+  if(ticket!==requestId)return;
   const magic=String.fromCharCode(...header.slice(0,4));
   const view=new DataView(header.buffer);
   if(magic!=='glTF'||view.getUint32(4,true)!==2||view.getUint32(8,true)!==file.size){status.textContent='Invalid GLB 2.0 header or file length.';input.value='';return;}
   current=URL.createObjectURL(file);status.textContent='Loading '+file.name+'…';viewer.src=current;empty.hidden=true;reset.disabled=false;clear.disabled=false;
 });
 viewer.addEventListener('load',()=>{status.textContent='Model ready. Drag to rotate and pinch to zoom.';});
-viewer.addEventListener('error',()=>{status.textContent='Unable to render this GLB. Try another exported file.';});
+viewer.addEventListener('error',()=>{status.textContent='Unable to render this GLB. Try another exported file or load the gallery again.';});
 reset.addEventListener('click',()=>{viewer.cameraOrbit='auto auto auto';viewer.cameraTarget='auto auto auto';viewer.fieldOfView='auto';viewer.jumpCameraToGoal();});
 clear.addEventListener('click',()=>{release();input.value='';status.textContent='No model selected.';});
 window.addEventListener('pagehide',()=>{if(current)URL.revokeObjectURL(current);});
