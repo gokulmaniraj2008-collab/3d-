@@ -61,6 +61,9 @@ bpy.context.scene.camera=cam
 bpy.ops.object.light_add(type='AREA',location=(0,-5,9))
 bpy.context.object.data.energy=2200;bpy.context.object.data.size=8
 scene=bpy.context.scene;scene.render.engine='CYCLES';scene.cycles.samples=24
+scene.cycles.use_denoising=False
+for layer in scene.view_layers:
+    layer.cycles.use_denoising=False
 scene.render.resolution_x=1000;scene.render.resolution_y=650;scene.render.resolution_percentage=100
 out=os.path.abspath(os.environ.get('BUS_OUTPUT','TN_BUS_STUDIO/Shared_Assets'))
 os.makedirs(out,exist_ok=True)
