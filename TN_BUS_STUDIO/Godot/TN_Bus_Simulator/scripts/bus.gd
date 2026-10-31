@@ -23,7 +23,9 @@ func _ready() -> void:
     visual = Node3D.new()
     visual.name = "Visual"
     add_child(visual)
-    var imported := load("res://assets/TN_Bus.glb")
+    var imported: Resource = null
+    if ResourceLoader.exists("res://assets/TN_Bus.glb"):
+        imported = load("res://assets/TN_Bus.glb")
     if imported is PackedScene:
         var model := imported.instantiate()
         visual.add_child(model)
