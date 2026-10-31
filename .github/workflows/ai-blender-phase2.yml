@@ -24,9 +24,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
+    permissions:
+      contents: read
+    concurrency:
+      group: ai-blender-phase2-${{ github.ref }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - name: Install Blender dependencies
@@ -38,6 +40,8 @@ jobs:
         run: python3 -m unittest discover -s ai-blender/phase2/tests -v
       - name: Prepare scene
         env:
+          GEMINI_API_KEY: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && secrets.GEMINI_API_KEY || '' }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
           INPUT_MODE: ${{ inputs.mode }}
           INPUT_PROMPT: ${{ inputs.prompt }}
         run: |
@@ -59,9 +63,48 @@ jobs:
           python3 ai-blender/tests/validate_glb.py ai-blender-output/phase2/scene.glb
           test -s ai-blender-output/phase2/scene.blend
           test -s ai-blender-output/phase2/scene.png
+          python3 ai-blender/phase4/make_manifest.py --source ai-blender-output/phase2 --output "$RUNNER_TEMP/gallery-validation" --run-id "$GITHUB_RUN_ID" --sha "$GITHUB_SHA"
+          python3 -m json.tool "$RUNNER_TEMP/gallery-validation/latest.json" >/dev/null
       - uses: actions/upload-artifact@v4
         with:
           name: ai-blender-phase2-${{ github.run_id }}
           path: ai-blender-output/phase2/
           if-no-files-found: error
           retention-days: 7
+  publish:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: ai-blender-phase2-${{ github.run_id }}
+          path: ai-blender-output/phase2
+      - name: Publish latest model to isolated gallery branch
+        env:
+          GH_RUN_ID: ${{ github.run_id }}
+          GH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          python3 ai-blender/phase4/make_manifest.py --source ai-blender-output/phase2 --output "$RUNNER_TEMP/gallery-payload" --run-id "$GH_RUN_ID" --sha "$GH_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch origin ai-blender-gallery; then
+            git worktree add -B gallery-output "$RUNNER_TEMP/ai-blender-gallery" origin/ai-blender-gallery
+          else
+            git worktree add --detach "$RUNNER_TEMP/ai-blender-gallery" "$GITHUB_SHA"
+            git -C "$RUNNER_TEMP/ai-blender-gallery" switch --orphan gallery-output
+            git -C "$RUNNER_TEMP/ai-blender-gallery" rm -rf . || true
+          fi
+          cp "$RUNNER_TEMP/gallery-payload/scene.glb" "$RUNNER_TEMP/ai-blender-gallery/scene.glb"
+          cp "$RUNNER_TEMP/gallery-payload/latest.json" "$RUNNER_TEMP/ai-blender-gallery/latest.json"
+          git -C "$RUNNER_TEMP/ai-blender-gallery" add scene.glb latest.json
+          if ! git -C "$RUNNER_TEMP/ai-blender-gallery" diff --cached --quiet; then
+            git -C "$RUNNER_TEMP/ai-blender-gallery" commit -m "Publish AI Blender model from run $GH_RUN_ID"
+            git -C "$RUNNER_TEMP/ai-blender-gallery" push origin HEAD:refs/heads/ai-blender-gallery
+          fi
