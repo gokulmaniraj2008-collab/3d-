@@ -9,9 +9,9 @@ func _run() -> void:
     var world := scene.instantiate()
     root.add_child(world)
     await process_frame
-    var bus := world.get_node_or_null("Bus")
+    var bus := world.get_node_or_null("Bus") as CharacterBody3D
     assert(bus != null, "Bus node missing")
-    assert(world.camera != null, "Follow camera missing")
+    assert(world.get("camera") != null, "Follow camera missing")
     assert(bus.get('visual').get_child_count() > 0, "Bus model missing")
     var original := bus.global_position
     bus.call('drive', 1.0, 1.0, 0.0, false)
