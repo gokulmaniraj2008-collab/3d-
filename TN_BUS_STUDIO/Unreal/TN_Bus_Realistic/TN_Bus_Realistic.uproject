@@ -1,0 +1,13 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.4",
+  "Category": "Simulation",
+  "Description": "TN Bus Studio Unreal-ready project foundation",
+  "Modules": [
+    {
+      "Name": "TN_Bus_Realistic",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
