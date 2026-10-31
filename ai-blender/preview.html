@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10151b"><title>3D Preview · AI Blender Studio</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"></script>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#10151b;color:#f5f7fa}
+*{box-sizing:border-box}body{margin:0;padding:clamp(14px,4vw,26px);max-width:960px;margin-inline:auto}a{color:#81d3ad}h1{font-size:clamp(1.6rem,5vw,2.5rem);margin:.4em 0}p{color:#b7c5d3;line-height:1.5}.panel{background:#1c2731;border:1px solid #465665;border-radius:16px;padding:16px;margin-block:16px}label{display:block;font-weight:650;margin-bottom:9px}input[type=file]{width:100%;font:inherit;max-width:100%}button{font:inherit;border:0;border-radius:11px;background:#81d3ad;color:#092217;padding:12px 16px;font-weight:700;min-height:44px}button:disabled{opacity:.5}model-viewer{width:100%;height:min(62vh,540px);min-height:300px;border-radius:16px;background:radial-gradient(circle at 50% 40%,#364654,#15212b);--poster-color:transparent}model-viewer:not([src]){display:none}#empty{min-height:280px;display:grid;place-items:center;text-align:center;border:2px dashed #607486;border-radius:16px;padding:22px;color:#b7c5d3}.actions{display:flex;gap:10px;flex-wrap:wrap}.actions button{flex:1}#status{min-height:1.5em}small{color:#b7c5d3} :focus-visible{outline:3px solid #81d3ad;outline-offset:3px}
+</style>
+</head>
+<body>
+<nav><a href="./index.html">← AI Blender Studio</a></nav>
+<main>
+<p>PHASE 3 · ANDROID-FRIENDLY LOCAL VIEWER</p><h1>Interactive 3D preview</h1>
+<p>Download your GitHub Actions artifact ZIP, extract it on Android, then choose <strong>scene.glb</strong>. The model loads in this browser; it is not uploaded to a server.</p>
+<section class="panel">
+<label for="model-file">Choose a GLB file (up to 50 MB)</label>
+<input id="model-file" type="file" accept=".glb,model/gltf-binary,application/octet-stream" aria-describedby="status">
+<p id="status" role="status" aria-live="polite">No model selected.</p>
+<div class="actions"><button id="reset" type="button" disabled>Reset camera</button><button id="clear" type="button" disabled>Clear model</button></div>
+</section>
+<div id="empty">Your 3D model will appear here.<br>Drag to rotate · pinch to zoom.</div>
+<model-viewer id="viewer" camera-controls touch-action="pan-y" auto-rotate rotation-per-second="15deg" shadow-intensity="1" exposure="1" environment-image="neutral" interaction-prompt="auto" alt="Interactive preview of the selected Blender GLB model" loading="eager"></model-viewer>
+<p><small>GLB only. Native .blend files require Blender. The viewer uses Google's model-viewer library from a public CDN, so an internet connection is required for the viewer library. Your selected GLB remains local to the browser session.</small></p>
+<p><a href="https://github.com/gokulmaniraj2008-collab/3d-/actions/workflows/ai-blender-phase2.yml">Generate another model with GitHub Actions</a></p>
+</main>
+<script>
+const input=document.getElementById('model-file'),viewer=document.getElementById('viewer'),status=document.getElementById('status'),empty=document.getElementById('empty'),reset=document.getElementById('reset'),clear=document.getElementById('clear');
+let current=null;
+function release(){viewer.removeAttribute('src');if(current){URL.revokeObjectURL(current);current=null;}empty.hidden=false;reset.disabled=true;clear.disabled=true;}
+input.addEventListener('change',async()=>{
+  release();const file=input.files&&input.files[0];if(!file){status.textContent='No model selected.';return;}
+  if(!/\.glb$/i.test(file.name)){status.textContent='Please select a .glb file.';input.value='';return;}
+  if(file.size<20||file.size>50*1024*1024){status.textContent='File must be between 20 bytes and 50 MB.';input.value='';return;}
+  const header=new Uint8Array(await file.slice(0,12).arrayBuffer());
+  const magic=String.fromCharCode(...header.slice(0,4));
+  const view=new DataView(header.buffer);
+  if(magic!=='glTF'||view.getUint32(4,true)!==2||view.getUint32(8,true)!==file.size){status.textContent='Invalid GLB 2.0 header or file length.';input.value='';return;}
+  current=URL.createObjectURL(file);status.textContent='Loading '+file.name+'…';viewer.src=current;empty.hidden=true;reset.disabled=false;clear.disabled=false;
+});
+viewer.addEventListener('load',()=>{status.textContent='Model ready. Drag to rotate and pinch to zoom.';});
+viewer.addEventListener('error',()=>{status.textContent='Unable to render this GLB. Try another exported file.';});
+reset.addEventListener('click',()=>{viewer.cameraOrbit='auto auto auto';viewer.cameraTarget='auto auto auto';viewer.fieldOfView='auto';viewer.jumpCameraToGoal();});
+clear.addEventListener('click',()=>{release();input.value='';status.textContent='No model selected.';});
+window.addEventListener('pagehide',()=>{if(current)URL.revokeObjectURL(current);});
+</script>
+</body></html>
