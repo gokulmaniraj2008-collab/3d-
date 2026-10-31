@@ -1,5 +1,9 @@
 """Procedural, stylized Tamil Nadu green-and-cream bus. Blender 3.x/4.x."""
-import bpy, math, os
+import bpy, math, os, sys
+# Blender's --python runner does not always include the script directory on sys.path.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from bus_config import load_config
+CONFIG = load_config()
 from mathutils import Vector
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
@@ -9,8 +13,8 @@ def material(name, rgb, metallic=0):
     p.inputs['Base Color'].default_value=(*rgb,1)
     p.inputs['Metallic'].default_value=metallic
     return m
-green=material('Transport green',(.12,.34,.18))
-cream=material('Cream paint',(.83,.79,.63))
+green=material('Transport green',CONFIG['body_color'])
+cream=material('Cream paint',CONFIG['roof_color'])
 glass=material('Dark windows',(.04,.09,.12))
 black=material('Rubber / grille',(.025,.025,.025))
 silver=material('Metal',(.55,.55,.52),.65)
@@ -60,7 +64,7 @@ for side in (-1,1):
 box('Front bumper',(0,-5.28,.79),(2.5,.19,.17),silver)
 box('Rear bumper',(0,5.28,.79),(2.5,.19,.17),silver)
 # Phase 2: passenger cabin, driver cockpit and exterior fixtures.
-seat=material('Seat upholstery blue',(.055,.15,.27))
+seat=material('Seat upholstery blue',CONFIG['seat_color'])
 seat_frame=material('Seat frame',(.19,.20,.19),.35)
 floor_mat=material('Non slip floor',(.23,.22,.19))
 red=material('Tail lamp red',(.7,.035,.025))
@@ -68,7 +72,7 @@ yellow=material('Handrail yellow',(.85,.64,.07),.35)
 board=material('Destination board dark',(.055,.075,.045))
 box('Passenger cabin floor',(0,0,1.24),(2.17,9.75,.09),floor_mat)
 box('Centre aisle',(0,.25,1.295),(.48,8.8,.012),black)
-for row in range(7):
+for row in range(CONFIG['seat_rows']):
     y=-3.40+row*1.16
     for side in (-1,1):
         x=side*.76
@@ -95,6 +99,15 @@ for side in (-1,1):
     box('Entry handle %s'%side,(side*1.282,-2.26,1.64),(.035,.055,.21),silver)
     box('Rear side marker %s'%side,(side*1.26,4.52,1.24),(.035,.16,.09),amber)
 box('Destination sign face',(0,-5.216,2.94),(1.76,.024,.135),board)
+# Convert destination text to a mesh so GLB exporters can include it.
+bpy.ops.object.text_add(location=(-.82,-5.245,2.902), rotation=(math.pi/2,0,0))
+sign=bpy.context.object
+sign.name='Destination text'
+sign.data.body=CONFIG['destination']
+sign.data.size=.105
+sign.data.extrude=.001
+sign.data.materials.append(white)
+bpy.ops.object.convert(target='MESH')
 box('Registration plate front',(0,-5.39,.91),(.50,.025,.13),white)
 box('Rear window',(0,5.20,2.55),(1.95,.028,.50),glass)
 box('Rear registration plate',(0,5.40,.91),(.50,.025,.13),white)
@@ -102,7 +115,7 @@ for side in (-1,1):
     box('Rear tail lamp %s'%side,(side*1.03,5.23,1.35),(.18,.035,.36),red)
     box('Rear indicator %s'%side,(side*1.03,5.25,1.63),(.18,.035,.11),amber)
     box('Front fog lamp %s'%side,(side*.98,-5.30,.85),(.16,.035,.075),white)
-for y in (-2.8,.1,2.9):
+for y in (-2.8,.1,2.9)[:CONFIG['roof_vents']]:
     box('Roof vent %s'%y,(0,y,3.19),(.62,.72,.085),silver)
 for side in (-1,1):
     box('Rain gutter %s'%side,(side*1.245,0,3.075),(.045,10.35,.035),silver)
@@ -113,7 +126,7 @@ cam.rotation_euler=direction.to_track_quat('-Z','Y').to_euler()
 bpy.context.scene.camera=cam
 bpy.ops.object.light_add(type='AREA',location=(0,-5,9))
 bpy.context.object.data.energy=2200;bpy.context.object.data.size=8
-scene=bpy.context.scene;scene.render.engine='CYCLES';scene.cycles.samples=24
+scene=bpy.context.scene;scene.render.engine='CYCLES';scene.cycles.samples=CONFIG['preview_samples']
 scene.cycles.use_denoising=False
 for layer in scene.view_layers:
     layer.cycles.use_denoising=False
