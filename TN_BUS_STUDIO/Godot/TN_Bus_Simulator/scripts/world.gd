@@ -1,12 +1,13 @@
 extends Node3D
 const BusScript = preload("res://scripts/bus.gd")
+const VillageRoad = preload("res://scripts/village_road.gd")
 var bus
 var camera: Camera3D
 var speed_label: Label
 
 func _ready() -> void:
     _setup_inputs()
-    _environment()
+    VillageRoad.new().build(self)
     bus = CharacterBody3D.new()
     bus.set_script(BusScript)
     bus.position = Vector3(0, 0.1, 0)
