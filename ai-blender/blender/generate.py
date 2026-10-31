@@ -48,7 +48,6 @@ def build(preset):
         raise ValueError("Unsupported preset")
     bpy.ops.object.camera_add(location=(3.5, -4.5, 3.0))
     camera = bpy.context.object
-    direction = (0, 0, 0.65) - camera.location if False else None
     from mathutils import Vector
     camera.rotation_euler = (Vector((0, 0, 0.65)) - camera.location).to_track_quat("-Z", "Y").to_euler()
     bpy.context.scene.camera = camera
