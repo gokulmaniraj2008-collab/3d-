@@ -1,0 +1,39 @@
+name: Validate Godot TN Bus Simulator
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'TN_BUS_STUDIO/**'
+      - '.github/workflows/tn-bus-godot.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender and NumPy
+        run: sudo apt-get update && sudo apt-get install -y blender python3-numpy unzip
+      - name: Generate shared GLB
+        run: blender -b -t 2 --python-exit-code 1 --python TN_BUS_STUDIO/Blender/generate_bus.py
+      - name: Copy bus asset into Godot project
+        run: cp TN_BUS_STUDIO/Shared_Assets/TN_Bus.glb TN_BUS_STUDIO/Godot/TN_Bus_Simulator/assets/TN_Bus.glb
+      - name: Install Godot 4.3
+        run: |
+          curl -fL --retry 3 -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp
+          chmod +x /tmp/Godot_v4.3-stable_linux.x86_64
+          mv /tmp/Godot_v4.3-stable_linux.x86_64 /tmp/godot
+      - name: Import Godot assets
+        run: /tmp/godot --headless --path TN_BUS_STUDIO/Godot/TN_Bus_Simulator --editor --import --quit
+      - name: Run simulator smoke test
+        run: /tmp/godot --headless --path TN_BUS_STUDIO/Godot/TN_Bus_Simulator --script res://tests/smoke_test.gd
+      - name: Upload playable Godot project
+        uses: actions/upload-artifact@v4
+        with:
+          name: TN-Bus-Godot-Project
+          path: |
+            TN_BUS_STUDIO/Godot/TN_Bus_Simulator/
+            !TN_BUS_STUDIO/Godot/TN_Bus_Simulator/.godot/
+          retention-days: 7
