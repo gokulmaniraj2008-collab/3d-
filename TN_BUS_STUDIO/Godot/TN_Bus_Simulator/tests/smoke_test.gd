@@ -69,5 +69,22 @@ func _run() -> void:
     if bus.get("speed") != 0.0:
         fail("Open doors must prevent acceleration")
         return
+    var route: Node = world.get_node_or_null("RouteManager")
+    if route == null:
+        fail("Route manager missing")
+        return
+    if route.call("try_complete_stop", bus):
+        fail("Must not complete a distant stop")
+        return
+    bus.global_position = Vector3(-3.0, 0.1, -24.0)
+    if not route.call("try_complete_stop", bus):
+        fail("Stationary bus with doors open must complete first stop")
+        return
+    if route.get("current_stop") != 1 or route.get("passengers") != 6:
+        fail("Passenger and stop counts incorrect")
+        return
+    if route.call("try_complete_stop", bus):
+        fail("Cannot complete the next distant stop")
+        return
     print("TN BUS SMOKE TEST PASSED")
     quit(0)
