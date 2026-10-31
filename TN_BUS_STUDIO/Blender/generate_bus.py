@@ -1,5 +1,7 @@
 """Procedural, stylized Tamil Nadu green-and-cream bus. Blender 3.x/4.x."""
-import bpy, math, os
+import bpy, math, os, sys
+# Blender's --python runner does not always include the script directory on sys.path.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bus_config import load_config
 CONFIG = load_config()
 from mathutils import Vector
