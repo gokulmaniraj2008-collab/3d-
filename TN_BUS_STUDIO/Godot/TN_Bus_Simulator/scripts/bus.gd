@@ -5,6 +5,10 @@ const ACCEL := 7.0
 const BRAKE := 13.0
 const DRAG := 3.5
 const TURN_RATE := 0.85
+const REVERSE_MAX_SPEED := 5.0
+const COAST_DRAG := 2.0
+const STEERING_RESPONSE := 3.0
+var steering_angle := 0.0
 var speed := 0.0
 var throttle_touch := false
 var brake_touch := false
@@ -27,7 +31,7 @@ func _ready() -> void:
     if ResourceLoader.exists("res://assets/TN_Bus.glb"):
         imported = load("res://assets/TN_Bus.glb")
     if imported is PackedScene:
-        var model := imported.instantiate()
+        var model: Node = imported.instantiate()
         visual.add_child(model)
         # Blender exports Z-up converted to Godot Y-up; model's front is -Z.
     else:
@@ -59,11 +63,17 @@ func drive(delta: float, throttle: float, steering: float, braking: bool) -> voi
     if braking:
         speed = move_toward(speed, 0.0, BRAKE * delta)
     elif absf(throttle) > 0.01:
-        speed = move_toward(speed, throttle * MAX_SPEED, ACCEL * delta)
+        var target_speed := throttle * (MAX_SPEED if throttle > 0.0 else REVERSE_MAX_SPEED)
+        # Brake to a stop before switching driving direction.
+        if absf(speed) > 0.05 and signf(speed) != signf(target_speed):
+            speed = move_toward(speed, 0.0, BRAKE * delta)
+        else:
+            speed = move_toward(speed, target_speed, ACCEL * delta)
     else:
-        speed = move_toward(speed, 0.0, DRAG * delta)
+        speed = move_toward(speed, 0.0, COAST_DRAG * delta)
+    steering_angle = move_toward(steering_angle, steering, STEERING_RESPONSE * delta)
     if absf(speed) > 0.05:
-        rotation.y += steering * TURN_RATE * delta * signf(speed) * minf(absf(speed) / 4.0, 1.0)
+        rotation.y += steering_angle * TURN_RATE * delta * signf(speed) * minf(absf(speed) / 4.0, 1.0)
     velocity = -global_transform.basis.z * speed
     move_and_slide()
 
