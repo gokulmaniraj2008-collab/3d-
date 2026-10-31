@@ -1,0 +1,67 @@
+name: AI Blender Phase 2
+on:
+  pull_request:
+    paths:
+      - 'ai-blender/**'
+      - '.github/workflows/ai-blender-phase2.yml'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Example works without API key; prompt uses repository secret
+        type: choice
+        required: true
+        options:
+          - example
+          - prompt
+      prompt:
+        description: Natural language model request (3-500 characters)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender python3-numpy
+          blender -b --python-expr 'import numpy; print(numpy.__version__)'
+      - name: Validate scene schema
+        run: python3 -m unittest discover -s ai-blender/phase2/tests -v
+      - name: Prepare scene
+        env:
+          INPUT_MODE: ${{ inputs.mode }}
+          INPUT_PROMPT: ${{ inputs.prompt }}
+        run: |
+          set -euo pipefail
+          mkdir -p ai-blender-output/phase2
+          if [[ "${{ github.event_name }}" == "pull_request" || "$INPUT_MODE" == "example" ]]; then
+            cp ai-blender/phase2/examples/study-table.json ai-blender-output/phase2/scene.json
+          elif [[ "$INPUT_MODE" == "prompt" ]]; then
+            if [[ -z "$INPUT_PROMPT" || ${#INPUT_PROMPT} -gt 500 ]]; then
+              echo "Prompt required (up to 500 characters)"; exit 1
+            fi
+            python3 ai-blender/phase2/plan.py --prompt "$INPUT_PROMPT" --output ai-blender-output/phase2/scene.json
+          else
+            echo "Unsupported mode"; exit 1
+          fi
+      - name: Compile and validate 3D outputs
+        run: |
+          blender -b -t 2 --python ai-blender/blender/compile_scene.py -- --scene ai-blender-output/phase2/scene.json --output ai-blender-output/phase2
+          python3 ai-blender/tests/validate_glb.py ai-blender-output/phase2/scene.glb
+          test -s ai-blender-output/phase2/scene.blend
+          test -s ai-blender-output/phase2/scene.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-blender-phase2-${{ github.run_id }}
+          path: ai-blender-output/phase2/
+          if-no-files-found: error
+          retention-days: 7
