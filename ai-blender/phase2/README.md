@@ -1,0 +1,7 @@
+# Phase 2 — Android-friendly natural language Blender generation
+
+Open **Actions → AI Blender Phase 2 → Run workflow** on Android. Choose **example** to generate a study table without any API key. Choose **prompt**, enter a 3–500 character English/Tamil request, and configure repository Actions secret `GEMINI_API_KEY` (a user-owned key from an available free-tier provider) first. Optionally configure repository Actions variable `GEMINI_MODEL` (default `gemini-2.5-flash`, subject to provider availability). No paid service is required by the project, but hosted API free-tier eligibility and quotas are provider-dependent. Never commit keys or expose them in browser JS. If free quota is unavailable, example mode remains usable.
+
+The planner asks the hosted model for a strictly bounded scene JSON; the validator allows only 1–40 primitive objects, fixed material names and numeric bounds. AI-generated Python is NEVER executed. The compiler uses reviewed code. PR checks do not call external AI or require a key, and compile the example fixture to native BLEND, GLB and PNG. This is procedural prompt-to-scene, not photorealistic text-to-3D or automatic reference-image reconstruction.
+
+Phase 2 branches from Phase 1 while PR #21 is still open. Merge Phase 1 first; then retarget this PR to main, verify checks, and merge in dependency order. Existing TN Bus simulator, models and viewers are untouched.
