@@ -1,6 +1,8 @@
 extends Node3D
 const BusScript = preload("res://scripts/bus.gd")
 const VillageRoad = preload("res://scripts/village_road.gd")
+const RouteManager = preload("res://scripts/route_manager.gd")
+var route_manager: Node
 var bus
 var camera: Camera3D
 var speed_label: Label
@@ -20,6 +22,9 @@ func _ready() -> void:
     sunlight.rotation_degrees = Vector3(-50, -35, 0)
     sunlight.light_energy = 1.6
     add_child(sunlight)
+    route_manager = RouteManager.new()
+    route_manager.name = "RouteManager"
+    add_child(route_manager)
     _hud()
 
 func _setup_inputs() -> void:
@@ -88,7 +93,7 @@ func _hud() -> void:
     speed_label.add_theme_font_size_override("font_size", 25)
     root.add_child(speed_label)
     var help := Label.new()
-    help.text = "W/↑ Accelerate   S/↓ Reverse   A/D or ←/→ Steer   Space Brake"
+    help.text = "W/↑ Go   S/↓ Reverse   A/D Steer   Space Brake   H Handbrake   O Doors   E Serve Stop"
     help.position = Vector2(18, 54)
     root.add_child(help)
     var buttons := [
@@ -113,10 +118,19 @@ func _hud() -> void:
         button.button_down.connect(func(): bus.set(property_name, true))
         button.button_up.connect(func(): bus.set(property_name, false))
 
+func _unhandled_key_input(event: InputEvent) -> void:
+    if event is InputEventKey and event.pressed and not event.echo:
+        if event.physical_keycode == KEY_H:
+            bus.toggle_handbrake()
+        elif event.physical_keycode == KEY_O:
+            bus.set_doors_open(not bus.doors_open)
+        elif event.physical_keycode == KEY_E:
+            route_manager.try_complete_stop(bus)
+
 func _process(delta: float) -> void:
     if bus == null:
         return
-    speed_label.text = "TN BUS  |  %03d km/h" % roundi(absf(bus.speed) * 3.6)
+    speed_label.text = "TN BUS | %03d km/h | %s | %s" % [roundi(absf(bus.speed) * 3.6), ("DOORS OPEN" if bus.doors_open else "DOORS CLOSED"), route_manager.status_text()]
     var desired: Vector3 = bus.global_position + bus.global_transform.basis.z * 17.0 + Vector3.UP * 8.0
     camera.global_position = camera.global_position.lerp(desired, minf(delta * 5.0, 1.0))
     camera.look_at(bus.global_position + Vector3.UP * 1.7, Vector3.UP)
