@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>AI Blender Studio — Phase 1</title><style>
 :root{color-scheme:dark;font-family:system-ui;background:#10151b;color:#f5f7fa}body{max-width:720px;margin:auto;padding:24px}h1{font-size:clamp(1.8rem,6vw,3rem)}p{color:#b7c5d3;line-height:1.6}label{display:block;margin:24px 0 8px}select,button{width:100%;padding:15px;border-radius:12px;font:inherit}select{background:#202b35;color:white;border:1px solid #536678}button{margin-top:16px;background:#81d3ad;color:#092217;border:0;font-weight:700}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#202b35;padding:16px;border-radius:12px}a{color:#81d3ad}</style></head><body>
-<main><p>OPEN-SOURCE PROTOTYPE · ₹0 SOFTWARE</p><h1>AI Blender Studio</h1><p>Phase 1: Generate a reviewed scene specification on your Android phone. Run the corresponding Blender preset from the GitHub Actions tab to receive actual BLEND, GLB and PNG artifacts. Natural-language AI generation comes later.</p>
-<label for="preset">Select a model</label><select id="preset"><option value="cube">Rounded cube</option><option value="chair">Chair</option><option value="table">Table</option></select>
-<button id="download">Download scene specification (.json)</button><p><a href="./preview.html">Open interactive 3D preview (upload your exported GLB)</a></p><h2>Scene specification</h2><pre id="preview" aria-live="polite"></pre>
+<main><p>OPEN-SOURCE PROTOTYPE · ₹0 SOFTWARE</p><h1>AI Blender Studio</h1><p>Generate a 3D model from a text prompt using the secure GitHub Actions workflow, or start from a reviewed preset. View the latest published GLB directly on Android.</p>
+<p><a href="./generate.html">Create a 3D model from a text prompt →</a></p><label for="preset">Select a model</label><select id="preset"><option value="cube">Rounded cube</option><option value="chair">Chair</option><option value="table">Table</option></select>
+<button id="download">Download scene specification (.json)</button><p><a href="./preview.html">Open interactive 3D preview (latest published model or local GLB)</a></p><h2>Scene specification</h2><pre id="preview" aria-live="polite"></pre>
 <p><a href="https://github.com/gokulmaniraj2008-collab/3d-/actions/workflows/ai-blender-phase1.yml">Open GitHub Actions to generate the actual model</a></p></main>
 <script>
 const select=document.getElementById('preset'),preview=document.getElementById('preview');
