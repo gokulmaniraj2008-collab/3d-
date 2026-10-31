@@ -1,0 +1,54 @@
+name: AI Blender Phase 1
+
+on:
+  workflow_dispatch:
+    inputs:
+      preset:
+        description: Reviewed procedural model preset
+        required: true
+        type: choice
+        options:
+          - cube
+          - chair
+          - table
+  pull_request:
+    paths:
+      - 'ai-blender/**'
+      - '.github/workflows/ai-blender-phase1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender python3-numpy
+          blender --version
+          blender -b --python-expr 'import numpy; print("Blender NumPy:", numpy.__version__)'
+      - name: Generate and validate presets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            presets=("${{ inputs.preset }}")
+          else
+            presets=(cube chair table)
+          fi
+          for preset in "${presets[@]}"; do
+            blender -b -t 2 --python ai-blender/blender/generate.py -- --preset "$preset" --output "ai-blender-output/$preset"
+            python3 ai-blender/tests/validate_glb.py "ai-blender-output/$preset/$preset.glb"
+            test -s "ai-blender-output/$preset/$preset.blend"
+            test -s "ai-blender-output/$preset/$preset.png"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-blender-phase1-${{ github.run_id }}
+          path: ai-blender-output/
+          if-no-files-found: error
+          retention-days: 7
