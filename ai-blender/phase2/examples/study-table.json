@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 2,
+  "sceneName": "Study table",
+  "objects": [
+    {
+      "id": "top",
+      "type": "box",
+      "dimensions": [
+        1.5,
+        0.8,
+        0.08
+      ],
+      "position": [
+        0,
+        0,
+        0.78
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "material": "wood"
+    },
+    {
+      "id": "leg00",
+      "type": "box",
+      "dimensions": [
+        0.07,
+        0.07,
+        0.74
+      ],
+      "position": [
+        -0.65,
+        -0.3,
+        0.37
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "material": "metal"
+    },
+    {
+      "id": "leg01",
+      "type": "box",
+      "dimensions": [
+        0.07,
+        0.07,
+        0.74
+      ],
+      "position": [
+        -0.65,
+        0.3,
+        0.37
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "material": "metal"
+    },
+    {
+      "id": "leg10",
+      "type": "box",
+      "dimensions": [
+        0.07,
+        0.07,
+        0.74
+      ],
+      "position": [
+        0.65,
+        -0.3,
+        0.37
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "material": "metal"
+    },
+    {
+      "id": "leg11",
+      "type": "box",
+      "dimensions": [
+        0.07,
+        0.07,
+        0.74
+      ],
+      "position": [
+        0.65,
+        0.3,
+        0.37
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "material": "metal"
+    }
+  ]
+}
