@@ -1,20 +1,65 @@
-# TN BUS STUDIO 🚌
+# TN Bus Studio 🚌
 
-Phone-first, prompt-directed 3D asset pipeline. ChatGPT edits the Blender Python source in this repository; GitHub Actions runs Blender in the cloud. No paid AI API is required. This is **not** an autonomous prompt-processing bot: send the prompt in ChatGPT and request a reviewed repository change.
+A free-to-start, **phone-first, prompt-directed** Blender → GLB → Godot development project. ChatGPT can propose and commit reviewed source/configuration changes to GitHub; GitHub Actions performs the builds. This is **not** an unattended natural-language-to-3D service, and no paid AI API is required.
 
-## How to build on Android
-1. Merge the setup PR into main.
-2. Open **Actions → Build TN Bus 3D → Run workflow**.
-3. Download the **TN-Bus-3D** artifact from the completed run.
-4. The ZIP contains `TN_Bus.blend`, `TN_Bus.glb`, and `TN_Bus_preview.png`.
+## Start here (Android)
 
-The first model is a stylized approximation, not an exact photo reconstruction. The GLB is intended as the shared starting asset for Godot and Unreal. FBX export and game logic are future tasks, not implemented here. GitHub Actions usage and artifact retention follow GitHub account terms.
+1. Open the [project repository](https://github.com/gokulmaniraj2008-collab/3d-) and review the open pull requests. The work is stacked: **PR #1** simulator foundation → **PR #2** village road → **PR #3** configurable automation. Merge in dependency order after checks pass.
+2. To request a change, tell ChatGPT: *"Update my TN Bus Studio configuration: dark green body, cream roof, six seat rows and two roof vents. Preserve existing files, open a PR and verify both workflows."*
+3. Or open `Blender/bus_config.json` in GitHub on a feature branch, tap Edit (pencil), adjust values and commit. Never paste shell commands or Python into JSON.
+4. On the PR, open **Checks**. Wait for **Build TN Bus 3D** and **Validate Godot TN Bus Simulator** to succeed. Tap a failed step to inspect its log.
+5. In the successful run, scroll to **Artifacts**, download the ZIP and extract it with Android Files. Artifacts are retained for **7 days** by these workflows. A PNG can be viewed on Android; editing a BLEND needs Blender; playing the Godot project needs a compatible Godot installation. No Android APK is generated yet.
 
-## Prompt example
-"Update TN_BUS_STUDIO/Blender/generate_bus.py to make the front windscreen taller and add a Tamil destination sign. Preserve other repository files, open a PR and verify the build."
+**Important:** A `workflow_dispatch` button is normally available on the repository's default branch once its workflow file is merged there. PR-triggered checks can run before merging. Free GitHub Actions usage is subject to GitHub plan limits.
 
-## Structure
-- Blender/generate_bus.py — editable procedural model
-- Shared_Assets — generated at build time; do not commit large binaries
-- Godot — planned Godot simulator
-- Unreal — planned Unreal scene
+## Current features
+
+| Area | Source | Output |
+| --- | --- | --- |
+| Configurable Blender model | `Blender/generate_bus.py`, `Blender/bus_config.json` | Editable `TN_Bus.blend`, portable `TN_Bus.glb`, preview `TN_Bus_preview.png` |
+| Input validation | `Blender/bus_config.py`, `Blender/validate_config.py` | Fails early on unknown/out-of-range settings |
+| Export validation | `Blender/validate_outputs.py` | Checks sizes and BLEND/GLB/PNG signatures |
+| Godot arcade simulator | `Godot/TN_Bus_Simulator/` | Follow camera, driving controls, village road, bus-stop scene |
+| Automated checks | `.github/workflows/tn-bus-studio.yml`, `tn-bus-godot.yml` | `TN-Bus-3D`, `TN-Bus-Godot-Project` artifacts **only on successful jobs** |
+| Unreal | `Unreal/README.md` | Planned; no Unreal project or automatic export yet |
+
+## Supported bus settings
+
+Edit `Blender/bus_config.json` (valid JSON, no comments or trailing commas):
+
+| Key | Allowed values | Default |
+| --- | --- | --- |
+| `body_color` | RGB list of 3 numbers, each 0–1 | `[0.12, 0.34, 0.18]` |
+| `roof_color` | RGB list of 3 numbers, each 0–1 | `[0.83, 0.79, 0.63]` |
+| `seat_color` | RGB list of 3 numbers, each 0–1 | `[0.055, 0.15, 0.27]` |
+| `seat_rows` | Integer 1–7 (two seats per row) | `7` |
+| `roof_vents` | Integer 0–3 | `3` |
+| `destination` | 1–40 printable characters; Latin text recommended | `TAMIL NADU` |
+| `preview_samples` | Integer 8–64; higher is slower | `24` |
+
+These are the **only** supported JSON keys. More complex requests (doors, geometry, animations) require a reviewed Python/Godot code change rather than merely changing the JSON.
+
+## Validation and troubleshooting
+
+Run locally from repository root if Python 3 is available:
+
+```sh
+python3 TN_BUS_STUDIO/Blender/validate_config.py
+blender -b -t 2 --python-exit-code 1 --python TN_BUS_STUDIO/Blender/generate_bus.py
+python3 TN_BUS_STUDIO/Blender/validate_outputs.py
+```
+
+Godot CI additionally copies the GLB into `Godot/TN_Bus_Simulator/assets/`, imports the project with Godot 4.3 headless and runs `tests/smoke_test.gd`. If a run fails, inspect the **first failed step**, not only the overall red status. The GLB and Godot project are generated outputs, not large binary commits.
+
+## Project layout
+
+```text
+TN_BUS_STUDIO/
+  Blender/          # generator, JSON settings and validation scripts
+  Godot/TN_Bus_Simulator/  # playable prototype and smoke test
+  Shared_Assets/    # generated by CI; BLEND / GLB / preview PNG
+  Unreal/           # future engine integration
+.github/workflows/  # Blender and Godot build pipelines
+```
+
+The bus and village are stylized approximations, not an exact TNSTC vehicle, surveyed road or production-grade physics simulation. The current implementation requires review and successful CI before a merge.
