@@ -26,6 +26,8 @@ jobs:
         run: blender -b -t 2 --python-exit-code 1 --python TN_BUS_STUDIO/Blender/generate_bus.py
       - name: Verify export signatures and sizes
         run: python3 TN_BUS_STUDIO/Blender/validate_outputs.py
+      - name: Validate shared engine asset manifest
+        run: python3 TN_BUS_STUDIO/Blender/validate_engine_assets.py
       - name: Upload downloadable files
         uses: actions/upload-artifact@v4
         with:
