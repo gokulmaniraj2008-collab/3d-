@@ -58,6 +58,8 @@ def build(preset):
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.samples = 16
+    scene.cycles.use_denoising = False
+    scene.render.image_settings.file_format = "PNG"
     scene.render.resolution_x = 640
     scene.render.resolution_y = 480
     scene.render.resolution_percentage = 100
