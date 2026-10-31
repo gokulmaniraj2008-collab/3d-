@@ -1,0 +1,47 @@
+name: Build dual TNSTC front studies
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'TN_BUS_STUDIO/Blender/generate_dual_fronts.py'
+      - '.github/workflows/tnstc-fronts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'TN_BUS_STUDIO/Blender/generate_dual_fronts.py'
+      - '.github/workflows/tnstc-fronts.yml'
+permissions:
+  contents: read
+jobs:
+  fronts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install free Blender
+        run: sudo apt-get update && sudo apt-get install -y blender python3-numpy
+      - name: Verify Blender Python dependencies
+        run: blender -b --python-exit-code 1 --python-expr "import numpy; print('NumPy available:', numpy.__version__)"
+      - name: Generate both front GLBs
+        run: blender -b -t 2 --python-exit-code 1 --python TN_BUS_STUDIO/Blender/generate_dual_fronts.py
+      - name: Verify distinct valid GLB assets
+        run: |
+          python3 - <<'PY'
+          import os,struct,json
+          root='TN_BUS_STUDIO/Shared_Assets/Front_Studies'
+          for kind in ('Town','Ordinary'):
+              p=f'{root}/TNSTC_{kind}_Front.glb'
+              b=open(p,'rb').read()
+              assert b[:4]==b'glTF' and struct.unpack_from('<I',b,4)[0]==2
+              assert struct.unpack_from('<I',b,8)[0]==len(b)
+              n,tag=struct.unpack_from('<I4s',b,12)
+              assert tag==b'JSON'
+              j=json.loads(b[20:20+n]);assert len(j.get('meshes',[]))>=15
+              print(kind,len(b),'bytes',len(j['meshes']),'meshes')
+          assert open(f'{root}/TNSTC_Town_Front.glb','rb').read()!=open(f'{root}/TNSTC_Ordinary_Front.glb','rb').read()
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TNSTC-Town-and-Ordinary-Front-GLBs
+          path: TN_BUS_STUDIO/Shared_Assets/Front_Studies/*.glb
+          retention-days: 7
