@@ -1,0 +1,7 @@
+# Phase 5 — secure Android text-to-3D handoff
+
+Open `/ai-blender/generate.html` from an Android browser, type a 3–500 character description, copy it and follow the link to the authenticated GitHub Actions **AI Blender Phase 2** workflow. Select `main`, `prompt` mode, paste the prompt and run. The existing private repository Actions secret `GEMINI_API_KEY` is read only in the planner step of a manual main-branch run. GitHub Actions validates the JSON scene and runs the reviewed Blender compiler; a successful main-branch run publishes the latest GLB to the isolated public `ai-blender-gallery` branch. Load it at `/ai-blender/preview.html`.
+
+**Security boundary:** a public static Vercel page cannot securely dispatch a GitHub workflow by itself without authenticated server-side GitHub authorization. This phase deliberately uses the signed-in GitHub Actions handoff instead of putting a personal access token, GitHub credentials or Gemini key in browser JavaScript, URL parameters or local storage. No paid hosting or new backend is introduced. It is not one-tap direct submission. Never put sensitive prompts into public published models or share the run logs if prompt content is private. Gemini free quota and eligibility depend on the provider; `example` mode still works without Gemini.
+
+The current generator produces bounded primitive-based scenes (not arbitrary professional sculpting or photorealistic image-to-3D). Phase 5 changes only `ai-blender/` pages and documentation. TN Bus Studio remains untouched.
