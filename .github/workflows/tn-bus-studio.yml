@@ -11,7 +11,7 @@ on:
       - 'TN_BUS_STUDIO/**'
       - '.github/workflows/tn-bus-studio.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,3 +32,20 @@ jobs:
           name: TN-Bus-3D
           path: TN_BUS_STUDIO/Shared_Assets/
           retention-days: 7
+      - name: Publish verified GLB for Vercel viewer (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p ai-3d-studio/models
+          cp TN_BUS_STUDIO/Shared_Assets/TN_Bus.glb ai-3d-studio/models/TN_Bus.glb
+          test -s ai-3d-studio/models/TN_Bus.glb
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ai-3d-studio/models/TN_Bus.glb
+          if git diff --cached --quiet; then
+            echo 'Viewer GLB unchanged'; exit 0
+          fi
+          git commit -m 'Publish validated TN Bus GLB for web viewer [skip ci]'
+          git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push origin HEAD:main
