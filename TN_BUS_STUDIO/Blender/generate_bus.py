@@ -27,7 +27,13 @@ def disc(name,loc,r,depth,mat,rot):
     o=bpy.context.object;o.name=name;o.data.materials.append(mat);return o
 # X width, Y length, Z height. Front at negative Y.
 box('Green lower shell',(0,0,1.43),(2.42,10.3,1.55),green)
-box('Cream upper shell',(0,0,2.55),(2.42,10.3,.72),cream)
+# Open upper cabin rather than opaque upper cube.
+for side in (-1,1):
+    box('Upper roof rail %s'%side,(side*1.17,0,2.89),(.13,10.25,.19),cream)
+    for i in range(9):
+        box('Window pillar %s %s'%(side,i),(side*1.18,-4.96+i*1.24,2.53),(.10,.09,.66),cream)
+box('Front upper fascia',(0,-5.10,2.91),(2.38,.15,.26),cream)
+box('Rear upper fascia',(0,5.10,2.58),(2.38,.15,.72),cream)
 box('Roof',(0,0,3.04),(2.48,10.4,.22),cream)
 box('Cream waist band',(0,0,2.08),(2.45,10.32,.17),cream)
 box('Undercarriage',(0,0,.75),(2,10,.18),black)
@@ -53,6 +59,53 @@ for side in (-1,1):
     box('Indicator %s'%side,(side*1.03,-5.24,1.48),(.16,.035,.10),amber)
 box('Front bumper',(0,-5.28,.79),(2.5,.19,.17),silver)
 box('Rear bumper',(0,5.28,.79),(2.5,.19,.17),silver)
+# Phase 2: passenger cabin, driver cockpit and exterior fixtures.
+seat=material('Seat upholstery blue',(.055,.15,.27))
+seat_frame=material('Seat frame',(.19,.20,.19),.35)
+floor_mat=material('Non slip floor',(.23,.22,.19))
+red=material('Tail lamp red',(.7,.035,.025))
+yellow=material('Handrail yellow',(.85,.64,.07),.35)
+board=material('Destination board dark',(.055,.075,.045))
+box('Passenger cabin floor',(0,0,1.24),(2.17,9.75,.09),floor_mat)
+box('Centre aisle',(0,.25,1.295),(.48,8.8,.012),black)
+for row in range(7):
+    y=-3.40+row*1.16
+    for side in (-1,1):
+        x=side*.76
+        box('Seat cushion %s %s'%(row,side),(x,y,1.73),(.76,.65,.16),seat)
+        box('Seat back %s %s'%(row,side),(x,y+.27,2.04),(.76,.13,.68),seat)
+        for leg in (-.23,.23):
+            box('Seat support %s %s %s'%(row,side,leg),(x+leg,y,1.47),(.055,.055,.45),seat_frame)
+box('Driver seat cushion',(-.70,-4.55,1.72),(.68,.62,.17),seat)
+box('Driver seat back',(-.70,-4.25,2.03),(.68,.12,.64),seat)
+box('Dashboard',(0,-4.91,1.99),(2.12,.39,.24),black)
+disc('Steering wheel',(-.68,-4.60,2.28),.24,.055,black,(math.pi/2,0,0))
+box('Fare box',(.68,-4.43,1.73),(.32,.28,.68),seat_frame)
+for side in (-1,1):
+    box('Overhead grab rail %s'%side,(side*.63,.15,2.79),(.035,8.9,.035),yellow)
+    for y in (-3.1,-.8,1.5,3.8):
+        box('Grab pole %s %s'%(side,y),(side*.63,y,2.12),(.035,.035,1.38),yellow)
+    box('Side skirt trim %s'%side,(side*1.237,.2,1.03),(.028,9.6,.065),silver)
+    for i in range(8):
+        y=-4.42+i*1.22
+        box('Window top trim %s %s'%(side,i),(side*1.246,y,2.83),(.018,1.05,.024),silver)
+        box('Window bottom trim %s %s'%(side,i),(side*1.246,y,2.27),(.018,1.05,.024),silver)
+    box('Entry door outline %s'%side,(side*1.253,-2.55,1.75),(.024,1.0,1.65),silver)
+    box('Entry door split %s'%side,(side*1.268,-2.55,1.75),(.028,.026,1.58),black)
+    box('Entry handle %s'%side,(side*1.282,-2.26,1.64),(.035,.055,.21),silver)
+    box('Rear side marker %s'%side,(side*1.26,4.52,1.24),(.035,.16,.09),amber)
+box('Destination sign face',(0,-5.216,2.94),(1.76,.024,.135),board)
+box('Registration plate front',(0,-5.39,.91),(.50,.025,.13),white)
+box('Rear window',(0,5.20,2.55),(1.95,.028,.50),glass)
+box('Rear registration plate',(0,5.40,.91),(.50,.025,.13),white)
+for side in (-1,1):
+    box('Rear tail lamp %s'%side,(side*1.03,5.23,1.35),(.18,.035,.36),red)
+    box('Rear indicator %s'%side,(side*1.03,5.25,1.63),(.18,.035,.11),amber)
+    box('Front fog lamp %s'%side,(side*.98,-5.30,.85),(.16,.035,.075),white)
+for y in (-2.8,.1,2.9):
+    box('Roof vent %s'%y,(0,y,3.19),(.62,.72,.085),silver)
+for side in (-1,1):
+    box('Rain gutter %s'%side,(side*1.245,0,3.075),(.045,10.35,.035),silver)
 # Camera / light are not part of exported model.
 bpy.ops.object.camera_add(location=(11,-16,9))
 cam=bpy.context.object; direction=Vector((0,0,1.5))-cam.location
