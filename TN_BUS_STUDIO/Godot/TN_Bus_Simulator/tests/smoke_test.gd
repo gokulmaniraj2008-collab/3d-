@@ -51,5 +51,23 @@ func _run() -> void:
     if bus.get("speed") > 0.0:
         fail("Direction changes must brake before accelerating forward")
         return
+    bus.set("speed", 4.0)
+    if bus.call("set_doors_open", true):
+        fail("Doors must not open while moving")
+        return
+    bus.call("toggle_handbrake")
+    bus.call("drive", 0.5, 1.0, 0.0, false)
+    if bus.get("speed") >= 4.0:
+        fail("Handbrake must decelerate the bus")
+        return
+    bus.set("speed", 0.0)
+    if not bus.call("set_doors_open", true):
+        fail("Doors must open when stationary")
+        return
+    bus.call("toggle_handbrake")
+    bus.call("drive", 0.5, 1.0, 0.0, false)
+    if bus.get("speed") != 0.0:
+        fail("Open doors must prevent acceleration")
+        return
     print("TN BUS SMOKE TEST PASSED")
     quit(0)
