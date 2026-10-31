@@ -1,6 +1,6 @@
 extends Node3D
 const BusScript = preload("res://scripts/bus.gd")
-var bus: CharacterBody3D
+var bus
 var camera: Camera3D
 var speed_label: Label
 
